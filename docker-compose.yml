@@ -1,0 +1,24 @@
+version: "3.8"
+
+# Spins up a local PostgreSQL database with the PostGIS extension
+# pre-installed, so the team doesn't need to install Postgres manually.
+#
+# Usage:
+#   docker compose up -d
+#   (then, inside server/) npm run db:init
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: smart-delivery-location-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: smart_delivery_location
+    ports:
+      - "5432:5432"
+    volumes:
+      - sdl_pgdata:/var/lib/postgresql/data
+
+volumes:
+  sdl_pgdata:
