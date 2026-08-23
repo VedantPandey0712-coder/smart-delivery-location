@@ -7,6 +7,7 @@ const path = require("path");
 const deliveryPointsRouter = require("./routes/deliveryPoints");
 const errorHandler = require("./middleware/errorHandler");
 const { UPLOAD_DIR } = require("./middleware/upload");
+const pool = require("./db");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -32,6 +33,16 @@ app.use((req, res) => {
 
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`🚀 Smart Delivery Location API running on http://localhost:${PORT}`);
-});
+async function start() {
+  try {
+    await pool.initializeDatabase();
+    app.listen(PORT, () => {
+      console.log(`Smart Delivery Location API running on http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error("Failed to initialize the database:", err.message);
+    process.exit(1);
+  }
+}
+
+start();
