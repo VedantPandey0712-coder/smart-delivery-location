@@ -14,7 +14,12 @@ export default function Home() {
 
   useEffect(() => {
     DeliveryPointsAPI.list()
-      .then(setPoints)
+      .then((data) => {
+        if (!Array.isArray(data)) {
+          throw new Error(data?.error || "Failed to load delivery points.");
+        }
+        setPoints(data);
+      })
       .catch((err) => setError(err.message || "Failed to load delivery points."));
   }, []);
 
