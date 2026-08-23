@@ -12,9 +12,10 @@ const pool = require("./db");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const allowedOrigins = (process.env.CLIENT_ORIGIN || "http://localhost:5173")
+const allowedOrigins = `${process.env.CLIENT_ORIGIN || "http://localhost:5173"},https://smart-delivery-location.vercel.app`
   .split(",")
-  .map((o) => o.trim());
+  .map((o) => o.trim().replace(/\/$/, ""))
+  .filter(Boolean);
 
 app.use(cors({ origin: allowedOrigins }));
 app.use(morgan("dev"));
