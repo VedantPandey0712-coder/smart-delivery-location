@@ -1,6 +1,7 @@
 const express = require("express");
 const pool = require("../db");
 const { upload, UPLOAD_DIR } = require("../middleware/upload");
+const { requireAuth, requireRole } = require("../middleware/auth");
 const { calculateConfidenceScore, confidenceLabel } = require("../services/confidenceScore");
 
 const router = express.Router();
@@ -268,7 +269,7 @@ router.post("/:id/report-issue", async (req, res, next) => {
 });
 
 // Mark a successful delivery (Historical Verification)
-router.post("/:id/mark-delivered", async (req, res, next) => {
+router.post("/:id/mark-delivered", requireAuth, requireRole("delivery_partner"), async (req, res, next) => {
   try {
     const existing = await fetchPointRow(req.params.id);
     if (!existing) return res.status(404).json({ error: "Delivery point not found." });

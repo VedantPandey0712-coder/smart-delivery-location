@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import ConfidenceMeter from "../components/ConfidenceMeter";
 import Toast from "../components/Toast";
 import { DeliveryPointsAPI } from "../api";
+import { useAuth } from "../auth";
 
 export default function DeliveryPointDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [point, setPoint] = useState(null);
   const [error, setError] = useState("");
   const [toast, setToast] = useState({ message: "", type: "info" });
@@ -176,9 +179,16 @@ export default function DeliveryPointDetail() {
               </div>
             </div>
 
-            <button className="btn btn-secondary btn-block" style={{ marginTop: 16, maxWidth: 360 }} onClick={handleMarkDelivered} disabled={busy}>
-              ✓ Mark as Successfully Delivered
-            </button>
+            {user?.role === "delivery_partner" ? (
+              <button className="btn btn-secondary btn-block" style={{ marginTop: 16, maxWidth: 360 }} onClick={handleMarkDelivered} disabled={busy}>
+                ✓ Mark as Successfully Delivered
+              </button>
+            ) : (
+              <div className="partner-only-note">
+                Successful delivery confirmation is available to signed-in delivery partners.
+                {!user && <Link to="/signin">Sign in as a delivery partner</Link>}
+              </div>
+            )}
 
             <div className="card delete-panel" style={{ marginTop: 20 }}>
               <h4 style={{ marginTop: 0 }}>Remove this address</h4>

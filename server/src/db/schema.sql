@@ -14,10 +14,18 @@ CREATE TABLE IF NOT EXISTS users (
     full_name     TEXT NOT NULL,
     email         TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
+    role          TEXT NOT NULL DEFAULT 'customer' CHECK (role IN ('customer', 'delivery_partner')),
     created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE INDEX IF NOT EXISTS idx_users_email ON users (LOWER(email));
+
+ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'customer';
+
+ALTER TABLE users
+    DROP CONSTRAINT IF EXISTS users_role_check,
+    ADD CONSTRAINT users_role_check CHECK (role IN ('customer', 'delivery_partner'));
 
 -- =========================================================
 -- delivery_points

@@ -539,6 +539,22 @@ textarea {
   font-size: 12px;
   margin: -8px 0 18px;
 }
+.partner-only-note {
+  max-width: 360px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--gray);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.partner-only-note a {
+  display: block;
+  margin-top: 4px;
+  color: var(--orange);
+  font-weight: 700;
+}
 
 .banner {
   background: var(--navy);

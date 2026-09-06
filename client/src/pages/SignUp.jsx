@@ -7,7 +7,7 @@ import Toast from "../components/Toast";
 export default function SignUp() {
   const navigate = useNavigate();
   const { signIn } = useAuth();
-  const [form, setForm] = useState({ fullName: "", email: "", password: "", confirmPassword: "" });
+  const [form, setForm] = useState({ fullName: "", email: "", password: "", confirmPassword: "", role: "customer" });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -17,7 +17,7 @@ export default function SignUp() {
     setBusy(true);
     setError("");
     try {
-      signIn(await AuthAPI.signUp({ fullName: form.fullName, email: form.email, password: form.password }));
+      signIn(await AuthAPI.signUp({ fullName: form.fullName, email: form.email, password: form.password, role: form.role }));
       navigate("/");
     } catch (err) {
       setError(err.response?.data?.error || "Could not create your account. Please try again.");
@@ -40,6 +40,14 @@ export default function SignUp() {
           <div className="field">
             <label htmlFor="signup-email">Email address</label>
             <input id="signup-email" type="email" autoComplete="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+          </div>
+          <div className="field">
+            <label htmlFor="signup-role">I am signing up as</label>
+            <select id="signup-role" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} required>
+              <option value="customer">Customer</option>
+              <option value="delivery_partner">Delivery partner</option>
+            </select>
+            <div className="hint">Delivery partners can confirm successful deliveries.</div>
           </div>
           <div className="row-2">
             <div className="field">

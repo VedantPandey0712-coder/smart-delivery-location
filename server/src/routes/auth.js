@@ -8,33 +8,34 @@ const JWT_SECRET = process.env.JWT_SECRET || "smart-delivery-location-developmen
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function publicUser(row) {
-  return { id: row.id, fullName: row.full_name, email: row.email };
+  return { id: row.id, fullName: row.full_name, email: row.email, role: row.role };
 }
 
 function createToken(user) {
-  return jwt.sign({ sub: user.id, email: user.email }, JWT_SECRET, { expiresIn: "7d" });
+  return jwt.sign({ sub: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: "7d" });
 }
 
-function validateCredentials(fullName, email, password) {
+function validateCredentials(fullName, email, password, role) {
   if (typeof fullName !== "string" || !fullName.trim()) return "Full name is required.";
   if (typeof email !== "string" || !emailRegex.test(email.trim())) return "A valid email address is required.";
   if (typeof password !== "string" || password.length < 8) return "Password must be at least 8 characters.";
+  if (!["customer", "delivery_partner"].includes(role)) return "Please choose a valid account type.";
   return null;
 }
 
 router.post("/signup", async (req, res, next) => {
   try {
-    const { fullName, email, password } = req.body;
-    const validationError = validateCredentials(fullName, email, password);
+    const { fullName, email, password, role } = req.body;
+    const validationError = validateCredentials(fullName, email, password, role);
     if (validationError) return res.status(400).json({ error: validationError });
 
     const normalizedEmail = email.trim().toLowerCase();
     const passwordHash = await bcrypt.hash(password, 12);
     const { rows } = await pool.query(
-      `INSERT INTO users (full_name, email, password_hash)
-       VALUES ($1, $2, $3)
-       RETURNING id, full_name, email`,
-      [fullName.trim(), normalizedEmail, passwordHash]
+      `INSERT INTO users (full_name, email, password_hash, role)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, full_name, email, role`,
+      [fullName.trim(), normalizedEmail, passwordHash, role]
     );
     const user = publicUser(rows[0]);
     res.status(201).json({ token: createToken(user), user });
@@ -72,7 +73,7 @@ router.get("/me", async (req, res, next) => {
     if (!token) return res.status(401).json({ error: "Authentication required." });
 
     const payload = jwt.verify(token, JWT_SECRET);
-    const { rows } = await pool.query(`SELECT id, full_name, email FROM users WHERE id = $1`, [payload.sub]);
+    const { rows } = await pool.query(`SELECT id, full_name, email, role FROM users WHERE id = $1`, [payload.sub]);
     if (!rows[0]) return res.status(401).json({ error: "Account not found." });
     res.json({ user: publicUser(rows[0]) });
   } catch (err) {
