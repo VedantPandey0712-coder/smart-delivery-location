@@ -6,6 +6,20 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- =========================================================
+-- users
+--   Credentials for customer authentication.
+-- =========================================================
+CREATE TABLE IF NOT EXISTS users (
+    id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    full_name     TEXT NOT NULL,
+    email         TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_users_email ON users (LOWER(email));
+
+-- =========================================================
 -- delivery_points
 --   The core "Verified Delivery Point Profile" described in
 --   the DoorPin / Smart Delivery Location pitch deck.

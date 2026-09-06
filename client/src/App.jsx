@@ -3,9 +3,21 @@ import { Routes, Route, Link, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import CreateDeliveryPoint from "./pages/CreateDeliveryPoint";
 import DeliveryPointDetail from "./pages/DeliveryPointDetail";
+import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
+import { AuthProvider, useAuth } from "./auth";
 
 export default function App() {
+  return (
+    <AuthProvider>
+      <AppShell />
+    </AuthProvider>
+  );
+}
+
+function AppShell() {
   const location = useLocation();
+  const { user, loading, signOut } = useAuth();
   return (
     <>
       <header className="topbar">
@@ -21,6 +33,15 @@ export default function App() {
             <Link to="/create" className={location.pathname === "/create" ? "active" : ""}>
               Create Delivery Point
             </Link>
+            {!loading && (user ? (
+              <button className="nav-account" onClick={signOut} title={`Sign out ${user.fullName}`}>
+                {user.fullName.split(" ")[0]} · Sign out
+              </button>
+            ) : (
+              <Link to="/signin" className={location.pathname === "/signin" ? "active" : ""}>
+                Sign in
+              </Link>
+            ))}
           </nav>
         </div>
       </header>
@@ -29,6 +50,8 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/create" element={<CreateDeliveryPoint />} />
         <Route path="/points/:id" element={<DeliveryPointDetail />} />
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} />
       </Routes>
 
       <footer className="site-footer">

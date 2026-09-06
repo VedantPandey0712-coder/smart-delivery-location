@@ -3,8 +3,21 @@ import axios from "axios";
 const configuredApiUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 const API_BASE_URL = configuredApiUrl.replace(/^VITE_API_BASE_URL=/, "").replace(/\/$/, "");
 const LOCAL_POINTS_KEY = "smart-delivery-location.points";
+export const AUTH_TOKEN_KEY = "smart-delivery-location.auth-token";
 
 export const api = axios.create({ baseURL: API_BASE_URL });
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem(AUTH_TOKEN_KEY);
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+export const AuthAPI = {
+  signUp: (payload) => api.post("/auth/signup", payload).then((r) => r.data),
+  signIn: (payload) => api.post("/auth/signin", payload).then((r) => r.data),
+  me: () => api.get("/auth/me").then((r) => r.data),
+};
 
 function localPoints() {
   return JSON.parse(localStorage.getItem(LOCAL_POINTS_KEY) || "[]");

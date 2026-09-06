@@ -1,7 +1,7 @@
 {
   "name": "smart-delivery-location-server",
   "version": "1.0.0",
-  "description": "Backend API for Smart Delivery Location \u2014 Intelligent Last-Mile Delivery Location Verification Platform",
+  "description": "Backend API for Smart Delivery Location — Intelligent Last-Mile Delivery Location Verification Platform",
   "main": "src/index.js",
   "type": "commonjs",
   "engines": {
@@ -13,9 +13,11 @@
     "db:init": "node src/db/init.js"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.3",
     "morgan": "^1.10.0",
     "multer": "^2.0.1",
     "pg": "^8.12.0",

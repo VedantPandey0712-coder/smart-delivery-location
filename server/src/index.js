@@ -5,6 +5,7 @@ const morgan = require("morgan");
 const path = require("path");
 
 const deliveryPointsRouter = require("./routes/deliveryPoints");
+const authRouter = require("./routes/auth");
 const errorHandler = require("./middleware/errorHandler");
 const { UPLOAD_DIR } = require("./middleware/upload");
 const pool = require("./db");
@@ -26,6 +27,7 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok", service: "smart-delivery-location-api" });
 });
 
+app.use("/api/auth", authRouter);
 app.use("/api/delivery-points", deliveryPointsRouter);
 
 app.use((req, res) => {
