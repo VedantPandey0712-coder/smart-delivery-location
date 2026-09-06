@@ -24,7 +24,7 @@ Smart-delivery-location creates a verified delivery point using multiple sources
 - Rider feedback
 - Location verification
 
-## Project Status 
+## Project Status
 
 Core implementation completed. The main functionality for intelligent delivery-location verification, including location pinning, delivery information, and confidence scoring, has been implemented and is functional.
 
