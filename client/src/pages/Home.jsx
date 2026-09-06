@@ -27,15 +27,15 @@ export default function Home() {
     <>
       <section className="hero">
         <div className="container">
-          <p className="eyebrow" style={{ color: "#ff6b35" }}>
+          <p className="eyebrow hero-eyebrow" style={{ color: "#ff6b35" }}>
             Intelligent Last-Mile Delivery
           </p>
-          <h1>From an Address to a Verified Delivery Point.</h1>
-          <p>
+          <h1 className="hero-title">From an Address to a Verified Delivery Point.</h1>
+          <p className="hero-copy">
             Smart Delivery Location helps customers create precise, evidence-backed delivery points using GPS,
             exact entrance pins, building context, and photos — so riders find the door on the first try.
           </p>
-          <div className="hero-actions">
+          <div className="hero-actions hero-actions-animated">
             <Link to="/create" className="btn btn-primary">
               + Create a Delivery Point
             </Link>

@@ -30,6 +30,26 @@ export default function App() {
         <Route path="/create" element={<CreateDeliveryPoint />} />
         <Route path="/points/:id" element={<DeliveryPointDetail />} />
       </Routes>
+
+      <footer className="site-footer">
+        <div className="container footer-inner">
+          <div>
+            <Link to="/" className="footer-brand">
+              <span className="dot" />
+              Smart Delivery Location
+            </Link>
+            <p className="footer-note">Clearer addresses. Smoother handoffs. Better first attempts.</p>
+          </div>
+          <div className="footer-links">
+            <Link to="/">Explore points</Link>
+            <Link to="/create">Create a point</Link>
+          </div>
+          <div className="footer-status">
+            <span className="status-dot" />
+            Built for confident deliveries
+          </div>
+        </div>
+      </footer>
     </>
   );
 }
