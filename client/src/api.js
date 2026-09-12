@@ -69,6 +69,7 @@ async function withLocalFallback(remoteRequest, localRequest) {
   try {
     return await remoteRequest();
   } catch (error) {
+    if (import.meta.env.PROD) throw error;
     console.warn("Using local storage because the API is unavailable.", error.message);
     return localRequest();
   }

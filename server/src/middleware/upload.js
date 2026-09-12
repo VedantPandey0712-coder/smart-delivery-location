@@ -11,7 +11,12 @@ if (!fs.existsSync(UPLOAD_DIR)) {
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOAD_DIR),
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname) || ".jpg";
+    const extensions = {
+      "image/jpeg": ".jpg",
+      "image/png": ".png",
+      "image/webp": ".webp",
+    };
+    const ext = extensions[file.mimetype] || ".jpg";
     cb(null, `${uuidv4()}${ext}`);
   },
 });

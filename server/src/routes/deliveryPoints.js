@@ -6,6 +6,31 @@ const { calculateConfidenceScore, confidenceLabel } = require("../services/confi
 
 const router = express.Router();
 const E164_PHONE_REGEX = /^\+[1-9][0-9]{7,14}$/;
+const MAX_TEXT_LENGTH = 500;
+
+function optionalText(value, fieldName) {
+  if (value == null || value === "") return null;
+  if (typeof value !== "string" || value.trim().length > MAX_TEXT_LENGTH) {
+    const error = new Error(`${fieldName} must be a text value with at most ${MAX_TEXT_LENGTH} characters.`);
+    error.status = 400;
+    throw error;
+  }
+  return value.trim();
+}
+
+function validCoordinate(value, minimum, maximum) {
+  return typeof value === "number" && Number.isFinite(value) && value >= minimum && value <= maximum;
+}
+
+function parseCoordinate(value, fieldName, minimum, maximum) {
+  const coordinate = typeof value === "string" && value.trim() !== "" ? Number(value) : value;
+  if (!validCoordinate(coordinate, minimum, maximum)) {
+    const error = new Error(`${fieldName} must be a number between ${minimum} and ${maximum}.`);
+    error.status = 400;
+    throw error;
+  }
+  return coordinate;
+}
 
 // ---------- helpers ----------
 
@@ -61,10 +86,10 @@ async function fetchPointRow(id) {
 router.post("/", async (req, res, next) => {
   try {
     const { addressText, customerName, customerPhone } = req.body;
-    if (!addressText || !addressText.trim()) {
+    if (typeof addressText !== "string" || !addressText.trim() || addressText.trim().length > MAX_TEXT_LENGTH) {
       return res.status(400).json({ error: "addressText is required." });
     }
-    if (typeof customerName !== "string" || !customerName.trim()) {
+    if (typeof customerName !== "string" || !customerName.trim() || customerName.trim().length > 120) {
       return res.status(400).json({ error: "customerName is required." });
     }
     if (typeof customerPhone !== "string" || !E164_PHONE_REGEX.test(customerPhone.trim())) {
@@ -124,7 +149,12 @@ router.get("/near", async (req, res, next) => {
   try {
     const { lat, lng, radius } = req.query;
     if (!lat || !lng) return res.status(400).json({ error: "lat and lng query params are required." });
+    const latitude = parseCoordinate(lat, "lat", -90, 90);
+    const longitude = parseCoordinate(lng, "lng", -180, 180);
     const radiusMeters = radius ? Number(radius) : 500;
+    if (!Number.isFinite(radiusMeters) || radiusMeters <= 0 || radiusMeters > 50000) {
+      return res.status(400).json({ error: "radius must be between 1 and 50000 meters." });
+    }
 
     const { rows } = await pool.query(
       `SELECT *, ST_Distance(location, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography) AS distance_meters
@@ -132,7 +162,7 @@ router.get("/near", async (req, res, next) => {
        WHERE location IS NOT NULL
          AND ST_DWithin(location, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography, $3)
        ORDER BY distance_meters ASC`,
-      [Number(lng), Number(lat), radiusMeters]
+      [longitude, latitude, radiusMeters]
     );
     res.json(
       rows.map((r) => ({ ...serializeDeliveryPoint(r, req), distanceMeters: Math.round(r.distance_meters) }))
@@ -172,6 +202,15 @@ router.patch("/:id", async (req, res, next) => {
       deliveryInstructions,
     } = req.body;
 
+    const parsedLatitude = latitude == null ? null : parseCoordinate(latitude, "latitude", -90, 90);
+    const parsedLongitude = longitude == null ? null : parseCoordinate(longitude, "longitude", -180, 180);
+    const cleanTowerBlock = optionalText(towerBlock, "towerBlock");
+    const cleanFloorNumber = optionalText(floorNumber, "floorNumber");
+    const cleanFlatNumber = optionalText(flatNumber, "flatNumber");
+    const cleanGateEntrance = optionalText(gateEntrance, "gateEntrance");
+    const cleanLandmark = optionalText(landmark, "landmark");
+    const cleanDeliveryInstructions = optionalText(deliveryInstructions, "deliveryInstructions");
+
     const client = await pool.connect();
     try {
       const hasCoords = latitude != null && longitude != null;
@@ -194,16 +233,16 @@ router.patch("/:id", async (req, res, next) => {
          WHERE id = $11
          RETURNING *`,
         [
-          latitude ?? null,
-          longitude ?? null,
+          parsedLatitude,
+          parsedLongitude,
           gpsConfirmed ?? (hasCoords ? true : null),
           pinPlaced ?? null,
-          towerBlock ?? null,
-          floorNumber ?? null,
-          flatNumber ?? null,
-          gateEntrance ?? null,
-          landmark ?? null,
-          deliveryInstructions ?? null,
+          cleanTowerBlock,
+          cleanFloorNumber,
+          cleanFlatNumber,
+          cleanGateEntrance,
+          cleanLandmark,
+          cleanDeliveryInstructions,
           req.params.id,
         ]
       );
